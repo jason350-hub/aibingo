@@ -1,0 +1,2028 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 時代媒體識讀 BINGO 大挑戰 - 假訊息辨識・演算法・數位韌性投屏互動系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfeff',
+                            100: '#cffafe',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            700: '#0e7490',
+                            900: '#164e63',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes pulse-gold {
+            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+            50% { box-shadow: 0 0 32px rgba(245, 158, 11, 0.95); }
+        }
+        .animate-gold-glow {
+            animation: pulse-gold 1.5s infinite;
+        }
+        /* 列印模式專用樣式：確保列印時只輸出 A4 學生學習單 */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-worksheet, #printable-worksheet * {
+                visibility: visible;
+            }
+            #printable-worksheet {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                display: block !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col select-none overflow-x-hidden">
+    <!-- 頂部資訊與控制欄 -->
+    <header class="bg-slate-900/90 border-b border-slate-800 px-4 py-2.5 backdrop-blur-md sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-600 flex items-center justify-center font-black text-xl shadow-md text-white">
+                識
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black tracking-wide text-white flex items-center gap-2">
+                    AI 時代媒體識讀 BINGO 大挑戰
+                    <span class="text-xs bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-2.5 py-0.5 rounded-full font-semibold">數位韌性互動版</span>
+                </h1>
+                <p class="text-xs text-slate-400 hidden sm:block">6×6 媒體識讀快速問答（AI深偽・資訊繭房・資訊操弄・查證防禦）</p>
+            </div>
+        </div>
+
+        <!-- 頂部快捷操作按鈕組 -->
+        <div class="flex items-center gap-2 flex-wrap">
+            <!-- 30秒記憶預覽按鈕 -->
+            <button onclick="startPreviewMode()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-md transition transform active:scale-95" title="展示所有宮格內容與金額 30 秒供各組記憶">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <span>30秒預覽記憶</span>
+            </button>
+
+            <!-- 隨機抽籤輪盤按鈕 -->
+            <button onclick="pickRandomUnopenedTile()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow transition transform active:scale-95">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                <span>抽籤叫號</span>
+            </button>
+
+            <!-- 列印空白學習單按鈕 -->
+            <button onclick="openPrintModal()" class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm font-medium transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                <span class="hidden md:inline">列印學習單</span>
+            </button>
+
+            <!-- 規則說明按鈕 -->
+            <button onclick="toggleModal('rules-modal', true)" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm transition" title="遊戲規則">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </button>
+
+            <!-- 音效開關 -->
+            <button id="sound-btn" onclick="toggleSound()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 text-sm transition" title="開關音效">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+            </button>
+
+            <!-- 全螢幕切換 -->
+            <button onclick="toggleFullscreen()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm transition" title="全螢幕模式">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0 0l-5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主畫面核心區塊：左側 6x6 賓果主宮格，右側 分組榜與14條線登記表 -->
+    <main class="flex-1 p-3 md:p-5 max-w-[1920px] w-full mx-auto grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+        
+        <!-- 左側主體：6x6 宮格投影區 (佔 8 ~ 9 欄) -->
+        <section class="xl:col-span-8 2xl:col-span-9 bg-slate-900/70 rounded-2xl p-3 md:p-5 border border-slate-800 shadow-2xl flex flex-col justify-between">
+            <div class="flex flex-wrap items-center justify-between mb-3 px-1 gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></span>
+                    <h2 class="text-lg md:text-xl font-bold text-slate-100">36 宮格媒體識讀題庫面板</h2>
+                    <span id="unopened-counter" class="text-xs bg-slate-800 border border-slate-700 text-cyan-300 font-semibold px-2.5 py-0.5 rounded-full">剩餘 36 格</span>
+                </div>
+                
+                <!-- 四大主題圖例與狀態說明 -->
+                <div class="text-xs text-slate-400 flex flex-wrap items-center gap-3">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-purple-400 inline-block"></span>AI深偽</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span>資訊繭房</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>資訊操弄</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>查證防禦</span>
+                    <span class="text-slate-600">|</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-emerald-600 inline-block"></span>答對</span>
+                    <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-rose-900/60 border border-rose-500/50 inline-block"></span>未得分</span>
+                </div>
+            </div>
+
+            <!-- 6x6 網格主體 -->
+            <div id="bingo-grid" class="grid grid-cols-6 gap-2 md:gap-2.5 aspect-square max-h-[75vh] w-full mx-auto">
+                <!-- 由 JavaScript 自動動態渲染 36 個宮格 -->
+            </div>
+
+            <!-- 底部操作提示 -->
+            <div class="mt-4 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between text-xs text-slate-400 gap-2">
+                <div>💡 提示：點擊任意宮格開啟快速問答；按鍵盤 <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-200 rounded border border-slate-700">Space</kbd> 可啟動/暫停 10 秒計時器。</div>
+                <button onclick="openResetConfirmModal()" class="text-rose-400 hover:text-rose-300 font-semibold hover:underline transition">重設整場遊戲</button>
+            </div>
+        </section>
+
+        <!-- 右側側邊欄：分組計分板 + 14 條線 BINGO 搶先登記 (佔 3 ~ 4 欄) -->
+        <aside class="xl:col-span-4 2xl:col-span-3 space-y-4">
+
+            <!-- 1. 當前輪到組別與分組排行榜 -->
+            <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 shadow-xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-base md:text-lg text-white flex items-center gap-2">
+                        <span>🏆</span> 各組收支累計表
+                    </h3>
+                    <div class="flex items-center gap-1">
+                        <button onclick="changeCurrentTurn()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-2.5 py-1.5 rounded-lg transition shadow">
+                            換下一組 ➔
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 當前行動組提示 -->
+                <div id="current-turn-banner" class="mb-3 p-2.5 rounded-xl bg-gradient-to-r from-cyan-950/90 to-indigo-950/90 border border-cyan-500/40 flex items-center justify-between">
+                    <div class="text-xs text-cyan-200 font-medium">當前回合選擇權：</div>
+                    <div id="current-turn-name" class="font-black text-amber-300 text-base md:text-lg">第 1 組</div>
+                </div>
+
+                <!-- 分組清單 -->
+                <div id="teams-list" class="space-y-2 max-h-[230px] overflow-y-auto pr-1">
+                    <!-- JS 動態生成組別與金額卡片 -->
+                </div>
+            </div>
+
+            <!-- 2. 14條線 BINGO 搶先登記器 ($5,000元線路獎金) -->
+            <div class="bg-slate-900/80 rounded-2xl p-4 border border-slate-800 shadow-xl">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <h3 class="font-bold text-base md:text-lg text-amber-300 flex items-center gap-1.5">
+                            <span>⚡</span> 連線搶先記錄表
+                        </h3>
+                        <p class="text-xs text-slate-400">每條線限首個喊出「BINGO」組別獨得 $5,000</p>
+                    </div>
+                    <span id="claimed-lines-count" class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                        0 / 14 條
+                    </span>
+                </div>
+
+                <!-- 連線標籤頁切換 -->
+                <div class="flex border-b border-slate-800 text-xs font-semibold mb-2.5">
+                    <button id="tab-horizontal" onclick="switchLineTab('h')" class="flex-1 py-1.5 text-center text-amber-400 border-b-2 border-amber-400">橫向 (6)</button>
+                    <button id="tab-vertical" onclick="switchLineTab('v')" class="flex-1 py-1.5 text-center text-slate-400 hover:text-slate-200">縱向 (6)</button>
+                    <button id="tab-diagonal" onclick="switchLineTab('d')" class="flex-1 py-1.5 text-center text-slate-400 hover:text-slate-200">斜線 (2)</button>
+                </div>
+
+                <!-- 連線項目列表容器 -->
+                <div id="lines-container" class="space-y-1.5 max-h-[270px] overflow-y-auto pr-1">
+                    <!-- JS 生成具體連線登記按鈕 -->
+                </div>
+            </div>
+
+            <!-- 3. 教學統計與快速備忘 -->
+            <div class="p-3.5 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                <span>累計發出總獎金：<strong id="total-money-issued" class="text-emerald-400 text-sm font-mono">$0</strong></span>
+                <span>已完成題數：<strong id="completed-questions-count" class="text-cyan-400 text-sm font-mono">0/36</strong></span>
+            </div>
+        </aside>
+    </main>
+
+    <!-- 題目彈窗互動 Modal (投屏主焦點) -->
+    <div id="question-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-cyan-500/60 rounded-3xl max-w-4xl w-full p-6 md:p-8 shadow-2xl flex flex-col relative transform transition-all max-h-[92vh] overflow-y-auto">
+            
+            <!-- 彈窗頂部：題號、分類與金額標籤 -->
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4 gap-3">
+                <div class="flex items-center gap-3">
+                    <span id="modal-q-number" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-600 to-indigo-600 text-white font-black text-2xl flex items-center justify-center shadow-lg shrink-0">
+                        1
+                    </span>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span id="modal-q-category-badge" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                AI 生成與深偽
+                            </span>
+                            <span id="modal-q-difficulty-badge" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-slate-800 text-amber-300 border border-amber-500/30">
+                                中級 ★★
+                            </span>
+                            <span class="text-xs text-slate-400 font-mono" id="modal-q-seq">題號 #1</span>
+                        </div>
+                        <h4 id="modal-q-title" class="text-base md:text-lg text-slate-200 font-bold mt-0.5">語音深偽（競選造假）</h4>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 shrink-0">
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block">本題獎勵金額</span>
+                        <span id="modal-q-reward" class="text-2xl md:text-3xl font-black text-amber-400 tracking-tight font-mono">$3,000 元</span>
+                    </div>
+                    <button onclick="closeQuestionModal()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">
+                        ✕
+                    </button>
+                </div>
+            </div>
+
+            <!-- 題目主文字展示區 (超大清晰字體，利於投屏觀看) -->
+            <div class="my-2 py-5 px-6 rounded-2xl bg-slate-800/80 border border-slate-700 text-center flex flex-col items-center justify-center min-h-[115px]">
+                <div id="modal-q-text" class="text-xl md:text-2xl font-black text-white leading-relaxed tracking-wide">
+                    題目載入中...
+                </div>
+            </div>
+
+            <!-- 四選一互動選擇題選項區 -->
+            <div id="modal-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 my-2.5">
+                <!-- 由 JavaScript 動態渲染 A、B、C、D 四個選項按鈕 -->
+            </div>
+
+            <!-- 10秒答題倒數計時器 -->
+            <div class="my-2.5 p-3.5 rounded-2xl bg-slate-800/50 border border-slate-700/80 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-bold text-slate-300">⏱️ 選擇題搶答限時（10秒）</span>
+                        <span id="timer-badge" class="text-xs bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded">未啟動</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="timer-toggle-btn" onclick="toggleTimer()" class="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded-lg transition">
+                            開始倒數
+                        </button>
+                        <button onclick="resetTimer()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs rounded-lg transition">
+                            重置
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 進度條 -->
+                <div class="w-full bg-slate-700 h-3.5 rounded-full overflow-hidden relative">
+                    <div id="timer-bar" class="h-full bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 transition-all duration-100 ease-linear" style="width: 100%;"></div>
+                </div>
+                <div class="text-right text-xs font-mono font-bold text-slate-400" id="timer-text">剩餘：10.0 秒</div>
+            </div>
+
+            <!-- 參考解答折疊區塊 (供教師查閱解說) -->
+            <div class="mt-1 mb-4">
+                <button onclick="toggleAnswerReveal()" id="answer-reveal-btn" class="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700/80 text-cyan-300 text-sm font-semibold flex items-center justify-between transition border border-cyan-500/20">
+                    <span>💡 點擊展開「課堂參考解答與媒體識讀解析」</span>
+                    <span id="answer-reveal-icon">▼</span>
+                </button>
+                <div id="answer-content-box" class="hidden mt-2 p-4 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-slate-100 text-base leading-relaxed">
+                    <strong class="text-amber-300 block mb-1">【標準參考答案】：</strong>
+                    <p id="modal-q-answer" class="font-bold text-lg text-emerald-300"></p>
+                    <p id="modal-q-detail" class="mt-2 text-xs md:text-sm text-slate-300 leading-normal"></p>
+                </div>
+            </div>
+
+            <!-- 評分結算按鈕組 -->
+            <div class="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400">得分組別：</span>
+                    <select id="modal-awarding-team" class="bg-slate-800 border border-slate-700 text-amber-300 font-bold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500">
+                        <!-- JS 動態填充分組選項 -->
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="btn-mark-wrong" onclick="markQuestionResult(false)" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-rose-900/60 text-rose-300 border border-rose-500/30 text-sm font-bold transition">
+                        ❌ 答錯 / 棄權 (不加分)
+                    </button>
+                    <button id="btn-mark-correct" onclick="markQuestionResult(true)" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-sm font-black shadow-lg shadow-emerald-900/40 transition transform active:scale-95 flex items-center gap-2">
+                        <span>✅ 答對！頒發獎勵</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 30 秒記憶大考驗模式全螢幕 Overlay -->
+    <div id="preview-modal" class="fixed inset-0 bg-slate-950/95 z-50 hidden flex flex-col p-4 md:p-6 backdrop-blur-lg">
+        <div class="flex flex-wrap items-center justify-between pb-3 border-b border-slate-800 mb-3 gap-3">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">🧠</span>
+                <div>
+                    <h3 class="text-xl md:text-2xl font-black text-amber-400 tracking-wide">30 秒速記大考驗！</h3>
+                    <p class="text-xs md:text-sm text-slate-300">請各組迅速記下 36 宮格內的高金額題目與主題分佈位置！</p>
+                </div>
+            </div>
+
+            <!-- 倒數大數字 -->
+            <div class="flex items-center gap-4">
+                <div class="bg-slate-900 border-2 border-amber-500 px-5 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg">
+                    <span class="text-xs text-amber-300 uppercase font-bold">倒數</span>
+                    <span id="preview-timer-num" class="text-3xl md:text-4xl font-mono font-black text-amber-400">30</span>
+                    <span class="text-xs text-amber-300">秒</span>
+                </div>
+                <button onclick="stopPreviewMode()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-bold transition">
+                    提早結束
+                </button>
+            </div>
+        </div>
+
+        <!-- 36 格卡片縮略一覽 (全展開) -->
+        <div id="preview-grid" class="flex-1 grid grid-cols-6 gap-2 overflow-y-auto p-1">
+            <!-- JS 動態生成 36 格正面卡片 -->
+        </div>
+    </div>
+
+    <!-- 連線確認登記 Modal -->
+    <div id="line-claim-modal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/60 rounded-3xl max-w-md w-full p-6 shadow-2xl text-center">
+            <div class="w-16 h-16 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500 mx-auto flex items-center justify-center text-3xl font-black mb-3">
+                🎉
+            </div>
+            <h3 class="text-2xl font-black text-white mb-1">恭喜喊出 BINGO 連線！</h3>
+            <p id="line-claim-target-text" class="text-sm text-amber-300 font-bold mb-4">登記連線：橫一 (獎金 $5,000)</p>
+
+            <div class="text-left bg-slate-800/80 p-4 rounded-xl border border-slate-700 mb-5">
+                <label class="block text-xs text-slate-400 mb-1.5 font-medium">請選擇第一位喊出 BINGO 的搶先組別：</label>
+                <select id="line-claim-team-select" class="w-full bg-slate-900 border border-slate-600 rounded-xl p-2.5 text-white font-bold focus:outline-none focus:border-amber-400">
+                    <!-- JS 生成組別選項 -->
+                </select>
+            </div>
+
+            <div class="flex items-center gap-2 justify-end">
+                <button onclick="toggleModal('line-claim-modal', false)" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition">
+                    取消
+                </button>
+                <button onclick="confirmClaimLine()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-sm font-black shadow-lg transition">
+                    確定登記並發放 $5,000 獎金
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重設遊戲確認自訂 Modal (取代瀏覽器 confirm) -->
+    <div id="reset-confirm-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-rose-500/50 rounded-3xl max-w-md w-full p-6 shadow-2xl text-center">
+            <div class="w-14 h-14 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 mx-auto flex items-center justify-center text-2xl mb-3">
+                ⚠️
+            </div>
+            <h3 class="text-xl font-black text-white mb-2">確定要重設整場遊戲嗎？</h3>
+            <p class="text-sm text-slate-400 mb-6">所有已開啟的 36 宮格題目狀態、14 條連線記錄與各組累計獎金都將完全歸零。</p>
+            <div class="flex items-center justify-center gap-3">
+                <button onclick="toggleModal('reset-confirm-modal', false)" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition">
+                    取消保留
+                </button>
+                <button onclick="executeResetGame()" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-black shadow-lg transition">
+                    確定重設遊戲
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遊戲規則 Modal -->
+    <div id="rules-modal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full p-6 md:p-8 shadow-2xl max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <span>📖</span> AI 時代媒體識讀 BINGO 活動規則說明
+                </h3>
+                <button onclick="toggleModal('rules-modal', false)" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            
+            <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                <div class="bg-cyan-950/30 border border-cyan-500/30 p-3.5 rounded-xl">
+                    <h5 class="text-cyan-300 font-bold mb-1">【遊戲準備】</h5>
+                    <ol class="list-decimal list-inside space-y-1 text-slate-300 text-xs md:text-sm">
+                        <li><strong>發放紙本：</strong>點擊上方「列印學習單」，發下 6×6 空白宮格表與收支表給各小組。</li>
+                        <li><strong>填入數字：</strong>各組隨機將 <strong>1 ~ 36</strong> 不重複數字填入空白 36 宮格內。</li>
+                        <li><strong>決定順序：</strong>各組抽撲克牌或由教師指定答題發言順序。</li>
+                        <li><strong>30秒預覽：</strong>教師點擊「30秒預覽記憶」，投屏展示宮格主題與金額 30 秒，請各組快速記憶高分題位置。</li>
+                    </ol>
+                </div>
+
+                <div class="bg-amber-950/30 border border-amber-500/30 p-3.5 rounded-xl">
+                    <h5 class="text-amber-300 font-bold mb-1">【進行步驟與評分規則】</h5>
+                    <ol class="list-decimal list-inside space-y-1 text-slate-300 text-xs md:text-sm">
+                        <li><strong>輪流挑題：</strong>輪到該組時，從螢幕上挑選一個尚未開啟的宮格號碼（或使用「抽籤叫號」）。</li>
+                        <li><strong>限時四選一搶答：</strong>該組推派代表從 <strong>A、B、C、D</strong> 四個選項中選出正確答案，限時 <strong>10 秒內</strong>完成作答。</li>
+                        <li><strong>依難易度獲得獎金：</strong>依題目難易度分級（<strong>初級 $1,000~$2,000、中級 $3,000~$5,000、高級 $6,000~$10,000</strong>），答對即可獲得對應獎金並記錄於收支表。</li>
+                        <li><strong>連線 BINGO 大獎 ($5,000)：</strong>各組在自己紙本上圈選該題號。當形成 6 格一直線（橫、直、斜共 14 條可能）時，全組必須齊聲大喊<strong>「BINGO」</strong>！</li>
+                        <li><strong>首位獨得原則：</strong>每條連線<strong>只有全班最先喊出並核對正確之組別可獲得 5,000 元加碼獎金</strong>，後續其他組別連成該線則不予重複計分。</li>
+                        <li><strong>勝負判定：</strong>36 格全數點選完畢後，統計各組「題目獎金 + 連線獎金」之總金額，金額最高組別獲勝！</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="mt-6 text-right">
+                <button onclick="toggleModal('rules-modal', false)" class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-sm transition">
+                    我明白了，開始挑戰
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 列印學生空白 6x6 宮格與收支記錄單 (列印專用 Modal) -->
+    <div id="print-modal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl text-center">
+            <h3 class="text-xl font-bold text-white mb-2">準備列印學生分組賓果學習單</h3>
+            <p class="text-sm text-slate-400 mb-6">點擊下方按鈕將開啟瀏覽器列印視窗，格式已排版為標準 A4 學生操作用紙（包含 6×6 空白宮格與 14 條連線紀錄表）。</p>
+            <div class="flex items-center justify-center gap-3">
+                <button onclick="toggleModal('print-modal', false)" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-semibold">取消</button>
+                <button onclick="window.print()" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-sm font-black shadow-lg">🖨️ 確認列印學習單</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 實際被列印的 A4 樣板 (螢幕常態隱藏，列印時可見) -->
+    <div id="printable-worksheet" class="hidden text-black bg-white p-6 font-sans">
+        <div style="text-align: center; margin-bottom: 12px; border-bottom: 2px solid #000; padding-bottom: 8px;">
+            <h2 style="font-size: 22px; font-weight: bold; margin: 0;">AI 時代媒體識讀 BINGO 學習單與收支記錄表</h2>
+            <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 6px;">
+                <span>組別：第 _______ 組</span>
+                <span>組長/紀錄員：_____________</span>
+                <span>組員名單：___________________________</span>
+            </div>
+        </div>
+
+        <p style="font-size: 12px; margin-bottom: 8px;">★ <strong>主題範疇：</strong>AI 生成與深度偽造、演算法與資訊繭房、資訊操弄與認知作戰、媒體識讀防禦與查證策略。請隨機將 <strong>1 ~ 36</strong> 不重複數字填入下方 6×6 空白方格內。遊戲進行時圈選已揭曉之題號，最先連成 6 格直線並齊喊「BINGO」之組別獨得 5,000 元！</p>
+
+        <!-- 6x6 空白表格 -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; text-align: center;">
+            <thead>
+                <tr style="background: #f1f5f9;">
+                    <th style="border: 1px solid #000; padding: 6px; font-size: 12px; width: 14%;">斜\直</th>
+                    <th style="border: 1px solid #000; padding: 6px; font-size: 13px;">直 1</th>
+                    <th style="border: 1px solid #000; padding: 6px; font-size: 13px;">直 2</th>
+                    <th style="border: 1px solid #000; padding: 6px; font-size: 13px;">直 3</th>
+                    <th style="border: 1px solid #000; padding: 6px; font-size: 13px;">直 4</th>
+                    <th style="border: 1px solid #000; padding: 6px; font-size: 13px;">直 5</th>
+                    <th style="border: 1px solid #000; padding: 6px; font-size: 13px;">直 6</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 12px 4px; font-size: 12px; font-weight: bold;">橫一</td>
+                    <td style="border: 1px solid #000; height: 48px;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 12px 4px; font-size: 12px; font-weight: bold;">橫二</td>
+                    <td style="border: 1px solid #000; height: 48px;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 12px 4px; font-size: 12px; font-weight: bold;">橫三</td>
+                    <td style="border: 1px solid #000; height: 48px;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 12px 4px; font-size: 12px; font-weight: bold;">橫四</td>
+                    <td style="border: 1px solid #000; height: 48px;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 12px 4px; font-size: 12px; font-weight: bold;">橫五</td>
+                    <td style="border: 1px solid #000; height: 48px;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 12px 4px; font-size: 12px; font-weight: bold;">橫六</td>
+                    <td style="border: 1px solid #000; height: 48px;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                    <td style="border: 1px solid #000;"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- 小組連線紀錄表與收支結算 -->
+        <h4 style="font-size: 13px; font-weight: bold; margin: 4px 0;">小組 14 條連線記錄核對表（是否領先獲得 5,000 元）：</h4>
+        <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 11px; margin-bottom: 12px;">
+            <tr style="background: #f8fafc;">
+                <td style="border: 1px solid #000; font-weight: bold; padding: 4px;">連線線條</td>
+                <td style="border: 1px solid #000;">直 1</td>
+                <td style="border: 1px solid #000;">直 2</td>
+                <td style="border: 1px solid #000;">直 3</td>
+                <td style="border: 1px solid #000;">直 4</td>
+                <td style="border: 1px solid #000;">直 5</td>
+                <td style="border: 1px solid #000;">直 6</td>
+                <td style="border: 1px solid #000;">左上至右下斜線</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000; font-weight: bold; padding: 6px;">是否優先連線</td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+            </tr>
+            <tr style="background: #f8fafc;">
+                <td style="border: 1px solid #000; font-weight: bold; padding: 4px;">連線線條</td>
+                <td style="border: 1px solid #000;">橫一</td>
+                <td style="border: 1px solid #000;">橫二</td>
+                <td style="border: 1px solid #000;">橫三</td>
+                <td style="border: 1px solid #000;">橫四</td>
+                <td style="border: 1px solid #000;">橫五</td>
+                <td style="border: 1px solid #000;">橫六</td>
+                <td style="border: 1px solid #000;">右上至左下斜線</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000; font-weight: bold; padding: 6px;">是否優先連線</td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+                <td style="border: 1px solid #000;"></td>
+            </tr>
+        </table>
+
+        <div style="border: 1px dashed #000; padding: 8px; font-size: 12px; display: flex; justify-content: space-between;">
+            <span>題目答對累積獎金：$_________________ 元</span>
+            <span>連線獎金 (____條 × 5,000)：$_________________ 元</span>
+            <span><strong>最終總收益：$_________________ 元</strong></span>
+        </div>
+    </div>
+
+    <!-- 慶祝彩帶畫布 -->
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <script>
+        /*
+           AI 時代媒體識讀賓果 36 道選擇題資料庫（依難易度分級調整得分金額）
+           難度與金額對照規則：
+           - 初級（★）：基礎觀念與日常防禦原則 -> $1,000 ~ $2,000
+           - 中級（★★）：演算法機制、心理偏誤與辨識技巧 -> $3,000 ~ $5,000
+           - 高級（★★★）：精確統計數據、學者專有名詞、三方結構與法律刑責 -> $6,000 ~ $10,000
+        */
+        const DIFFICULTY_STYLES = {
+            "初級": {
+                stars: "★",
+                badge: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+            },
+            "中級": {
+                stars: "★★",
+                badge: "bg-sky-500/15 text-sky-300 border-sky-500/30"
+            },
+            "高級": {
+                stars: "★★★",
+                badge: "bg-amber-500/20 text-amber-300 border-amber-500/40"
+            }
+        };
+
+        const CATEGORY_STYLES = {
+            "AI深偽": {
+                dot: "bg-purple-400",
+                badge: "bg-purple-500/20 text-purple-300 border-purple-500/30"
+            },
+            "資訊繭房": {
+                dot: "bg-cyan-400",
+                badge: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30"
+            },
+            "資訊操弄": {
+                dot: "bg-amber-400",
+                badge: "bg-amber-500/20 text-amber-300 border-amber-500/30"
+            },
+            "查證防禦": {
+                dot: "bg-emerald-400",
+                badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+            }
+        };
+
+        const QUESTIONS_DATA = [
+            // 一、AI 生成與深度偽造（1~9）
+            {
+                id: 1,
+                category: "AI深偽",
+                difficulty: "中級",
+                title: "語音深偽（競選造假）",
+                reward: 3000,
+                question: "2024年台灣大選前流傳偽造政治人物抨擊他人的造假音檔，只需少量公開語音樣本即可高度擬真，這屬於何種技術？",
+                options: [
+                    "語音深偽技術（AI Voice Cloning）",
+                    "區塊鏈數位簽章加密技術",
+                    "演算法協同過濾推薦技術",
+                    "自然語言情緒標籤分類技術"
+                ],
+                correctIndex: 0,
+                detail: "透過 AI 語音合成模型學習特定人士的聲紋、語調與停頓習慣，僅需數十秒公開演講音檔就能生成幾可亂真的假語音。"
+            },
+            {
+                id: 2,
+                category: "AI深偽",
+                difficulty: "初級",
+                title: "影片深偽（移花接木）",
+                reward: 2000,
+                question: "大選期間出現候選人「公開支持特定陣營」的變臉假影片，最常透過下列哪類封閉群組或短影音平台海量擴散？",
+                options: [
+                    "政府公文電子交換系統",
+                    "LINE 封閉群組與 TikTok 短影音平台",
+                    "學術期刊資料庫與圖書館系統",
+                    "銀行網路 ATM 轉帳通知介面"
+                ],
+                correctIndex: 1,
+                detail: "封閉通訊群組（如 LINE）難以被外部事實查核機制即時觸及，結合短影音平台的演算法推播，極易造成病毒式擴散。"
+            },
+            {
+                id: 3,
+                category: "AI深偽",
+                difficulty: "高級",
+                title: "台灣假訊息接觸普及率",
+                reward: 6000,
+                question: "根據 2025 年台灣相關民調顯示，曾接收過各類假訊息的受訪者比例高達多少？",
+                options: [
+                    "32.45%（約三成左右）",
+                    "58.10%（將近六成）",
+                    "75.80%（約四分之三）",
+                    "96.52%（超過九成六）"
+                ],
+                correctIndex: 3,
+                detail: "高達 96.52% 的台灣網路使用者曾接觸過疑似假訊息，顯示數位時代假訊息已無孔不入，全民媒體識讀刻不容緩。"
+            },
+            {
+                id: 4,
+                category: "AI深偽",
+                difficulty: "高級",
+                title: "AI 新聞幻覺重大問題比例",
+                reward: 7000,
+                question: "國際公共廣播機構（如 BBC）測試主流 AI 聊天機器人回答新聞時事時，發現高達多少比例存在重大錯誤或引用缺陷？",
+                options: [
+                    "12%（僅極少數出現誤差）",
+                    "28%（不到三分之一）",
+                    "53%（超過一半存在重大問題）",
+                    "89%（幾乎完全無法回答）"
+                ],
+                correctIndex: 2,
+                detail: "測試涵蓋 ChatGPT、Copilot、Gemini 與 Perplexity 等主流工具，結果顯示高達 53% 的新聞摘要存在事實扭曲或捏造來源的問題。"
+            },
+            {
+                id: 5,
+                category: "AI深偽",
+                difficulty: "中級",
+                title: "AI 混淆事實與主觀觀點",
+                reward: 3000,
+                question: "研究指出 AI 助理在回答新聞或時事問題時，常無法清晰區分哪兩者，導致使用者在無形中被帶風向？",
+                options: [
+                    "「繁體中文」與「簡體中文」",
+                    "「客觀事實」與「主觀觀點」",
+                    "「付費廣告」與「免費軟體」",
+                    "「圖片解析度」與「影片幀率」"
+                ],
+                correctIndex: 1,
+                detail: "AI 傾向以流暢、自信的語氣整合網路文本，常將特定評論者的主觀意見包裝成看似中立的客觀事實。"
+            },
+            {
+                id: 6,
+                category: "AI深偽",
+                difficulty: "中級",
+                title: "AI 引用缺陷與來源查證",
+                reward: 3500,
+                question: "評測顯示部分 AI 模型在資訊來源引用上的錯誤率偏高，若使用者未經交叉查證直接轉發會造成什麼風險？",
+                options: [
+                    "自動觸發手機系統恢復原廠設定",
+                    "導致網路頻寬超載並使帳號停權",
+                    "誤導大眾並擴散憑空捏造的錯誤資訊",
+                    "讓原始新聞網站的點閱率大幅暴增"
+                ],
+                correctIndex: 2,
+                detail: "AI 生成的「幻覺（Hallucination）」常會拼湊出看似真實的媒體名稱或網址，未經點擊原始來源核對極易傳播謠言。"
+            },
+            {
+                id: 7,
+                category: "AI深偽",
+                difficulty: "初級",
+                title: "可愛但有毒的政治迷因",
+                reward: 2000,
+                question: "政治人物遭 AI 變造成穿著怪異、誇張造型的短影片在社群瘋傳，常以哪種外衣包裝來降低民眾的戒心？",
+                options: [
+                    "「幽默、搞笑、惡搞」的娛樂迷因外衣",
+                    "「嚴肅學術論文」的專業報告格式",
+                    "「中央銀行利率公告」的官方公文形式",
+                    "「醫院健康檢查報告」的數據圖表"
+                ],
+                correctIndex: 0,
+                detail: "娛樂化與迷因化會讓人卸下對政治宣傳的防備，在不知不覺中接受貼文所暗示的刻板印象或負面標籤。"
+            },
+            {
+                id: 8,
+                category: "AI深偽",
+                difficulty: "中級",
+                title: "惡搞 AI 迷因的社會極化效應",
+                reward: 4000,
+                question: "學者指出，即使惡搞的 AI 政治迷因「一眼就能看出是假的」，但其高曝光率仍會帶來什麼潛在負面影響？",
+                options: [
+                    "有效促進不同陣營之間的理性對話",
+                    "大幅提升公民對公共政策的專業理解",
+                    "潛移默化地加劇政治對立與社會極化",
+                    "讓演算法自動關閉所有政治類推播"
+                ],
+                correctIndex: 2,
+                detail: "嘲諷與醜化特定對象的迷因會強化群體偏見，長期下來削弱理性公共討論的空間，擴大社會裂痕。"
+            },
+            {
+                id: 9,
+                category: "AI深偽",
+                difficulty: "中級",
+                title: "「越假越危險」傳播效應",
+                reward: 4500,
+                question: "「越假越危險」效應是指 AI 產出的誇張內容具備極高的戲劇張力與觸及率，在大規模傳播下仍能達到何種效果？",
+                options: [
+                    "自動過濾掉所有不實的網路留言",
+                    "扭曲整體輿論走向與公共討論焦點",
+                    "讓平台主動賠償受影響的每位用戶",
+                    "使假訊息在 10 分鐘內自動消失"
+                ],
+                correctIndex: 1,
+                detail: "演算法偏愛高情緒、高衝突的內容，越荒謬驚悚的假訊息往往獲得越高的演算法權重，即便少數人信以為真也足以干擾公共討論。"
+            },
+
+            // 二、演算法推薦與資訊繭房（10~18）
+            {
+                id: 10,
+                category: "資訊繭房",
+                difficulty: "高級",
+                title: "「資訊繭房」名詞提出者",
+                reward: 6000,
+                question: "「資訊繭房（Information Cocoons）」這個名詞最初是由哪一位美國法學與行為經濟學者所提出的？",
+                options: [
+                    "凱斯·桑斯坦（Cass Sunstein）",
+                    "艾倫·圖靈（Alan Turing）",
+                    "馬克·祖克柏（Mark Zuckerberg）",
+                    "諾姆·杭士基（Noam Chomsky）"
+                ],
+                correctIndex: 0,
+                detail: "凱斯·桑斯坦在《資訊烏托邦》一書中提出，當個人長期只接觸符合自己喜好的資訊時，便會將自己困在如蠶繭般的封閉空間中。"
+            },
+            {
+                id: 11,
+                category: "資訊繭房",
+                difficulty: "高級",
+                title: "資訊繭房的三方閉環成因",
+                reward: 8000,
+                question: "資訊繭房並非單純由演算法造成，而是由哪「三方」交織而成的閉環？",
+                options: [
+                    "硬體效能、網路速度、螢幕解析度",
+                    "演算法機制、平台商業模式、用戶點擊行為",
+                    "政府法規、傳統報社、電信營運商",
+                    "學校教育、家庭背景、個人閱讀速度"
+                ],
+                correctIndex: 1,
+                detail: "平台為了廣告收益（商業模式），透過推薦系統（演算法）投用戶所好，而用戶不斷點擊同質內容（行為），三者共同鎖死了資訊視野。"
+            },
+            {
+                id: 12,
+                category: "資訊繭房",
+                difficulty: "初級",
+                title: "演算法偏愛的情緒誘因",
+                reward: 2000,
+                question: "社群平台演算法以最大化用戶停留時間（Engagement）為核心，因此會優先推送能激起哪種反應的內容？",
+                options: [
+                    "平淡無奇的例行性氣象統計數據",
+                    "強烈情緒（如憤怒、恐懼）的爭議內容",
+                    "缺乏互動性的純文字法條全文",
+                    "完全沒有任何情緒起伏的學術摘要"
+                ],
+                correctIndex: 1,
+                detail: "研究顯示，「憤怒」與「恐懼」比平靜的客觀報導更能促使使用者按讚、留言筆戰與停留，進而成為演算法最愛推送的流量密碼。"
+            },
+            {
+                id: 13,
+                category: "資訊繭房",
+                difficulty: "中級",
+                title: "確認偏誤（Confirmation Bias）",
+                reward: 3500,
+                question: "「確認偏誤」在演算法不斷餽贈同質內容下被放大，最容易讓使用者產生什麼錯覺？",
+                options: [
+                    "懷疑自己所有的觀點都是錯誤的",
+                    "誤以為「全世界都跟我有一樣的想法」",
+                    "認為網路上的每個人都在客觀查證",
+                    "覺得演算法完全不了解自己的喜好"
+                ],
+                correctIndex: 1,
+                detail: "確認偏誤是指人們傾向尋找並相信符合自己既有信念的證據；演算法餵養同溫層內容，會讓人嚴重高估自身觀點在社會中的多數程度。"
+            },
+            {
+                id: 14,
+                category: "資訊繭房",
+                difficulty: "中級",
+                title: "迴聲室效應（Echo Chambers）",
+                reward: 3000,
+                question: "在封閉群組或特定社群中，異質聲音遭到排擠或封鎖，導致群體內部觀點趨於極端，這種現象被稱為？",
+                options: [
+                    "摩爾定律（Moore's Law）",
+                    "迴聲室效應（Echo Chambers）",
+                    "蝴蝶效應（Butterfly Effect）",
+                    "長尾理論（Long Tail Theory）"
+                ],
+                correctIndex: 1,
+                detail: "如同在密閉房間中喊話，聽到的全是自己聲音的回音，缺乏外部修正機制，極易滋生極端言論與陰謀論。"
+            },
+            {
+                id: 15,
+                category: "資訊繭房",
+                difficulty: "中級",
+                title: "個人化新聞首頁的雙面刃",
+                reward: 4000,
+                question: "新聞媒體（如《瑞典日報》）利用演算法根據讀者偏好打造個人化首頁，雖能提升 15% 流量，但也帶來什麼風險？",
+                options: [
+                    "限縮讀者接觸多元公共議題的機會",
+                    "導致新聞網站伺服器完全無法運作",
+                    "讓讀者被迫每天閱讀所有國際財經報導",
+                    "使記者再也不需要撰寫任何新聞稿"
+                ],
+                correctIndex: 0,
+                detail: "當新聞也完全迎合個人口味時，公民可能錯過與自己無關卻對社會至關重要的公共政策報導，削弱民主共識基礎。"
+            },
+            {
+                id: 16,
+                category: "資訊繭房",
+                difficulty: "中級",
+                title: "演算法偏見（Algorithmic Bias）",
+                reward: 3500,
+                question: "推薦系統因訓練資料不足或存在偏見，導致特定族群或觀點被邊緣化，這稱為什麼現象？",
+                options: [
+                    "演算法偏見（Algorithmic Bias）",
+                    "數位落差補償（Digital Compensation）",
+                    "開放原始碼協作（Open Source）",
+                    "端對端加密保護（E2EE）"
+                ],
+                correctIndex: 0,
+                detail: "演算法並非絕對客觀中立，它的設計邏輯與訓練語料反映了人類社會既有的偏見，若無監督就會自動化複製歧視。"
+            },
+            {
+                id: 17,
+                category: "資訊繭房",
+                difficulty: "中級",
+                title: "打破繭房的「探索注入」機制",
+                reward: 5000,
+                question: "為打破資訊繭房，部分平台開始引入「多樣性再排序」與哪一種機制，主動推薦非用戶慣常喜好的多元觀點？",
+                options: [
+                    "探索注入（Exploration Injection）機制",
+                    "自動封鎖異議留言機制",
+                    "單一關鍵字無限循環機制",
+                    "關閉搜尋功能強制推播機制"
+                ],
+                correctIndex: 0,
+                detail: "透過在推薦列表中刻意穿插不同領域、不同視角的優質內容，幫助使用者跳脫單一興趣迴圈，維持資訊多樣性。"
+            },
+            {
+                id: 18,
+                category: "資訊繭房",
+                difficulty: "初級",
+                title: "戳破演算法高牆的閱讀策略",
+                reward: 2000,
+                question: "媒體識讀教育強調使用者必須自我覺察演算法的推播痕跡，並透過哪兩種「跨界」閱讀方式來戳破無形的高牆？",
+                options: [
+                    "跨平台閱讀與跨來源閱讀",
+                    "跨夜熬夜閱讀與跨國網購比價",
+                    "只看標題閱讀與只看留言區閱讀",
+                    "關閉所有網路與完全不看新聞"
+                ],
+                correctIndex: 0,
+                detail: "不只依賴單一社群平台的動態牆，主動使用不同新聞媒體、搜尋引擎或無痕模式瀏覽，才能看見更完整的資訊全貌。"
+            },
+
+            // 三、演算法操弄與資訊作戰（19~27）
+            {
+                id: 19,
+                category: "資訊操弄",
+                difficulty: "初級",
+                title: "機器人帳號（Bot Networks）灌水",
+                reward: 2000,
+                question: "利用大量自動化程式帳號針對特定議題按讚、留言或刷聲量，營造「民意一面倒」假象的手法稱為？",
+                options: [
+                    "機器人帳號灌水（協同性不實行為）",
+                    "官方民意調查抽樣統計",
+                    "公民線上連署實名制投票",
+                    "雲端備份自動同步機制"
+                ],
+                correctIndex: 0,
+                detail: "網軍常利用自動化腳本在短時間內於留言區刷出整齊劃一的口號，製造「大家都在罵」或「全民都支持」的從眾壓力。"
+            },
+            {
+                id: 20,
+                category: "資訊操弄",
+                difficulty: "中級",
+                title: "聲量操弄（Volume Manipulation）",
+                reward: 4500,
+                question: "比假新聞更難察覺的認知作戰陷阱，透過灌水來製造虛假的多數民意，進而影響真實用戶判斷，這屬於？",
+                options: [
+                    "聲量操弄（Volume Manipulation）",
+                    "網路頻寬限速測試（Bandwidth Test）",
+                    "搜尋引擎最佳化（SEO）",
+                    "數位版權管理（DRM）"
+                ],
+                correctIndex: 0,
+                detail: "聲量操弄利用人類的「從眾心理」，即使內容本身只是偏頗觀點，透過人為衝高聲量也能讓旁觀者誤以為那是社會主流共識。"
+            },
+            {
+                id: 21,
+                category: "資訊操弄",
+                difficulty: "中級",
+                title: "演算法隱藏與群體檢舉攻擊",
+                reward: 4000,
+                question: "透過群體檢舉或針對特定帳號、文章大量點擊「隱藏」，藉此干擾社群平台推薦機制，讓不同聲音消失，這稱為？",
+                options: [
+                    "演算法隱藏與遮蔽操弄",
+                    "系統自動備份還原",
+                    "多因子身分驗證保護",
+                    "綠色節能省電模式"
+                ],
+                correctIndex: 0,
+                detail: "利用平台保護機制反過來對付正常創作者或查核粉專，誘使系統自動降低該帳號的觸及率甚至誤判停權。"
+            },
+            {
+                id: 22,
+                category: "資訊操弄",
+                difficulty: "初級",
+                title: "病毒式惡作劇與情緒動員",
+                reward: 1500,
+                question: "病毒式惡作劇與情緒動員（例如迴轉壽司店惡作劇影片被演算法快速推送），其推播背後的主要流量邏輯是？",
+                options: [
+                    "透過引發社會憤怒與爭議來衝高流量",
+                    "演算法自動獎勵優良道德行為",
+                    "店家付費購買首頁正面宣傳廣告",
+                    "系統隨機挑選零互動的冷門影片"
+                ],
+                correctIndex: 0,
+                detail: "演算法不在乎行為是好是壞，只在乎互動率；大眾越是憤怒轉發批判，越會將爭議人物推向流量巔峰，甚至引發模仿骨牌效應。"
+            },
+            {
+                id: 23,
+                category: "資訊操弄",
+                difficulty: "中級",
+                title: "台灣面臨的境外認知作戰評估",
+                reward: 3500,
+                question: "國際民主機構（如 V-Dem）長期評估指出，台灣是全球受哪一種威脅最嚴重的國家？",
+                options: [
+                    "境外勢力假訊息攻擊",
+                    "海底光纖電纜完全斷絕",
+                    "全球衛星定位系統失效",
+                    "傳統紙本報紙發行量過高"
+                ],
+                correctIndex: 0,
+                detail: "台灣因地緣政治與高度數位化的開放網路環境，成為境外資訊操弄與認知作戰的高強度測試場，常在大型選舉或敏感時刻發動。"
+            },
+            {
+                id: 24,
+                category: "資訊操弄",
+                difficulty: "中級",
+                title: "「七分真、三分假」混合戰術",
+                reward: 4500,
+                question: "現代攻擊者不再只發布全盤虛構的謊言，而是改採「七分真、三分假」的半真半假混合戰術，其主要目的為何？",
+                options: [
+                    "降低民眾戒心並提高混淆度與查證難度",
+                    "協助事實查核中心更快完成報告",
+                    "符合新聞倫理委員會的平衡報導規範",
+                    "減少文字輸入量以節省網路傳輸費"
+                ],
+                correctIndex: 0,
+                detail: "夾帶真實數據、新聞截圖作為掩護，在關鍵結論處偷渡特定政治意圖或虛假訊息，最容易讓受眾信以為真。"
+            },
+            {
+                id: 25,
+                category: "資訊操弄",
+                difficulty: "高級",
+                title: "選舉 AI 深偽訊息下架時限",
+                reward: 8000,
+                question: "台灣數位發展部設有「選舉 AI 深偽訊息通報網」，規定平台接獲違法深偽通報後須在多久之內限制瀏覽或移除？",
+                options: [
+                    "2 日內（48 小時內）",
+                    "14 日內（兩週內）",
+                    "30 日內（一個月內）",
+                    "須等選舉結束後 3 個月內"
+                ],
+                correctIndex: 0,
+                detail: "依據台灣選舉罷免法規，網路平台業者接獲違法深偽影音通知後，應於 2 日內限制瀏覽或移除，避免假影音在選前黃金時間擴散。"
+            },
+            {
+                id: 26,
+                category: "資訊操弄",
+                difficulty: "高級",
+                title: "散布深偽影音影響選舉之刑責",
+                reward: 10000,
+                question: "依據《公職人員選舉罷免法》，意圖影響選舉而散布深度偽造影音者，最高可判處多少年有期徒刑？",
+                options: [
+                    "最高 6 個月有期徒刑",
+                    "最高 2 年有期徒刑",
+                    "最高 5 年有期徒刑",
+                    "最高 7 年有期徒刑"
+                ],
+                correctIndex: 3,
+                detail: "法律明確加重對 AI 深偽介選的刑罰嚇阻，違法製作並散布足以生損害於公眾或他人之深偽影音，最高可處 7 年有期徒刑。"
+            },
+            {
+                id: 27,
+                category: "資訊操弄",
+                difficulty: "中級",
+                title: "警政科技偵查與深偽檢測",
+                reward: 3000,
+                question: "警政署在打擊選舉或重大事件的各類假訊息時，常結合哪兩項專業技術來進行源頭追查？",
+                options: [
+                    "AI 深偽檢測與數位鑑識",
+                    "3D 列印建模與虛擬實境遊戲",
+                    "衛星氣象雲圖與地質探勘",
+                    "基因定序分析與化學光譜"
+                ],
+                correctIndex: 0,
+                detail: "透過光譜分析、像素異常偵測及數位足跡追蹤，辨識影像是否經過 AI 變造並追查幕後散播源頭。"
+            },
+
+            // 四、媒體識讀防禦與查證策略（28~36）
+            {
+                id: 28,
+                category: "查證防禦",
+                difficulty: "初級",
+                title: "媒體識讀基本「三不防線」",
+                reward: 1000,
+                question: "面對聳動、來源不明的影音與圖文時，媒體識讀的基本三不防線為「不輕信、不轉傳」以及？",
+                options: [
+                    "先查證",
+                    "先按讚",
+                    "先留言",
+                    "先截圖分享"
+                ],
+                correctIndex: 0,
+                detail: "面對可疑訊息多花 30 秒查證，就能阻斷假訊息在親友 LINE 群組與社群中的傳播鏈。"
+            },
+            {
+                id: 29,
+                category: "查證防禦",
+                difficulty: "初級",
+                title: "官方與第三方事實查核比對",
+                reward: 1500,
+                question: "遇重大爭議或可疑候選人動態時，最適當的做法是透過官方公告或下列哪一類機構進行交叉比對？",
+                options: [
+                    "第三方事實查核機構（如台灣事實查核中心）",
+                    "匿名網路論壇的無來源八卦爆料區",
+                    "一頁式購物網站的客服聊天視窗",
+                    "未知寄件者的中獎通知簡訊連結"
+                ],
+                correctIndex: 0,
+                detail: "經過國際事實查核聯盟（IFCN）認證的獨立查核機構，會針對熱門網路傳言進行嚴謹的證據溯源與專家訪談。"
+            },
+            {
+                id: 30,
+                category: "查證防禦",
+                difficulty: "中級",
+                title: "AI 影像肉眼辨識破綻線索",
+                reward: 3000,
+                question: "在檢視影像有無遭 AI 變造時，除了觀察音調機械感，還可以從光影與細節尋找哪些蛛絲馬跡？",
+                options: [
+                    "光影不自然、手指耳部細節與繁體字筆畫破碎",
+                    "影片檔案格式是否為常見的 MP4 副檔名",
+                    "觀看影片時手機電池電量是否低於 50%",
+                    "貼文發布時間是否在週末假日晚上"
+                ],
+                correctIndex: 0,
+                detail: "AI 製圖在處理複雜的手部關節、耳部輪廓、背景繁體中文文字及反射光影時，常會出現扭曲變形或不合常理的破綻。"
+            },
+            {
+                id: 31,
+                category: "查證防禦",
+                difficulty: "初級",
+                title: "反向搜尋圖片（以圖搜圖）",
+                reward: 2000,
+                question: "若要追溯一張照片或影片截圖的原始出處，確認是否遭「舊片新用」或「移花接木」，最有效的工具功能是？",
+                options: [
+                    "反向搜尋圖片功能（Reverse Image Search）",
+                    "調整螢幕亮度與藍光護眼模式",
+                    "開啟手機飛航模式並清除快取",
+                    "將圖片轉存為黑白濾鏡特效"
+                ],
+                correctIndex: 0,
+                detail: "利用 Google 以圖搜圖等工具追溯原始發布時間與新聞出處，能快速破解時空錯置的假影像。"
+            },
+            {
+                id: 32,
+                category: "查證防禦",
+                difficulty: "初級",
+                title: "面對極端情緒貼文的煞車機制",
+                reward: 1500,
+                question: "當看到一則貼文讓您瞬間感到「極度憤怒」或「大快人心」時，最適當的心理應對策略是？",
+                options: [
+                    "先踩情緒煞車並保持冷靜思考",
+                    "立刻轉傳到所有家族群組提醒大家",
+                    "馬上在留言區用情緒性字眼回擊",
+                    "直接相信標題內容並按讚追蹤"
+                ],
+                correctIndex: 0,
+                detail: "假訊息與演算法最擅長操弄人類情緒，當情緒沸騰時理性判斷力會下降，先暫停深呼吸是最佳防禦。"
+            },
+            {
+                id: 33,
+                category: "查證防禦",
+                difficulty: "初級",
+                title: "破解繭房的多元資訊源習慣",
+                reward: 2000,
+                question: "為了有效對抗資訊繭房，公民在日常資訊接觸上應刻意養成何種訂閱習慣？",
+                options: [
+                    "刻意訂閱立場相異、領域多元的資訊源",
+                    "只追蹤與自己政治立場完全相同的粉專",
+                    "封鎖所有提出不同看法的媒體與朋友",
+                    "每天只透過單一短影音平台接收新聞"
+                ],
+                correctIndex: 0,
+                detail: "主動接觸不同世代、不同立場與國際媒體的觀點，避免長期依賴單一資訊來源，培養立體思辨能力。"
+            },
+            {
+                id: 34,
+                category: "查證防禦",
+                difficulty: "中級",
+                title: "使用 AI 工具的批判性思維",
+                reward: 3000,
+                question: "當使用 AI 工具整理資料或查詢問題時，使用者必須抱持何種心態來防範「AI 幻覺」？",
+                options: [
+                    "批判性思維與合理懷疑態度",
+                    "百分之百無條件信任 AI 的所有回答",
+                    "完全禁止在任何工作與學習中使用 AI",
+                    "只要 AI 語氣很肯定就不需要再查證"
+                ],
+                correctIndex: 0,
+                detail: "不盲信 AI 給出的參考資料與數據，對關鍵引文與事實務必進行二次查核，將 AI 視為輔助工具而非絕對權威。"
+            },
+            {
+                id: 35,
+                category: "查證防禦",
+                difficulty: "中級",
+                title: "公民數位韌性（Digital Resilience）",
+                reward: 5000,
+                question: "提升全社會對假訊息的免疫力，讓每位公民從「被動接收者」轉為「主動思辨者」，這體現了哪一種核心能力？",
+                options: [
+                    "公民數位韌性（Digital Resilience）",
+                    "硬體超頻運算能力（Overclocking）",
+                    "社群演算法操弄技術（Astroturfing）",
+                    "自動化機器人爬蟲能力（Web Scraping）"
+                ],
+                correctIndex: 0,
+                detail: "數位韌性讓公民在面對認知作戰與資訊洪流時，具備辨識、抵禦與快速復原的素養，守護民主社會的信任基礎。"
+            },
+            {
+                id: 36,
+                category: "查證防禦",
+                difficulty: "初級",
+                title: "發現可疑假訊息的檢舉與通報",
+                reward: 1500,
+                question: "當在社群網路上發現明顯可疑的造假訊息或深偽詐騙貼文時，除了不轉傳，最適當的公民行動為何？",
+                options: [
+                    "主動通報平台或相關事實查核單位",
+                    "幫忙把該貼文下載並重新上傳到其他平台",
+                    "點擊貼文內的不明外部連結輸入個資測試",
+                    "私訊鼓勵發文者繼續製作更多類似內容"
+                ],
+                correctIndex: 0,
+                detail: "透過平台檢舉機制與事實查核通報管道，能加速阻斷惡意資訊鏈條的擴散，保護更多網路使用者。"
+            }
+        ];
+
+        // 分組初始狀態 (預設 6 組)
+        let teams = [
+            { id: 1, name: "第 1 組", score: 0, linesWon: 0, color: "text-amber-400 border-amber-500 bg-amber-500/10" },
+            { id: 2, name: "第 2 組", score: 0, linesWon: 0, color: "text-sky-400 border-sky-500 bg-sky-500/10" },
+            { id: 3, name: "第 3 組", score: 0, linesWon: 0, color: "text-emerald-400 border-emerald-500 bg-emerald-500/10" },
+            { id: 4, name: "第 4 組", score: 0, linesWon: 0, color: "text-purple-400 border-purple-500 bg-purple-500/10" },
+            { id: 5, name: "第 5 組", score: 0, linesWon: 0, color: "text-rose-400 border-rose-500 bg-rose-500/10" },
+            { id: 6, name: "第 6 組", score: 0, linesWon: 0, color: "text-cyan-400 border-cyan-500 bg-cyan-500/10" }
+        ];
+
+        let currentTurnIndex = 0; // 目前輪到的組別索引
+        let activeTileId = null;  // 目前點選中的題號 (1~36)
+        let soundEnabled = true;
+
+        // 題目宮格開啟狀態表記錄：tileStates[id] = { opened: boolean, answeredCorrect: boolean, teamId: number|null }
+        let tileStates = {};
+        QUESTIONS_DATA.forEach(q => {
+            tileStates[q.id] = { opened: false, answeredCorrect: null, teamId: null };
+        });
+
+        // 14 條連線記錄表狀態 (橫1~6, 直1~6, 斜1~2)
+        const LINES_DEFINITION = [
+            // 橫向
+            { id: "h1", type: "h", name: "橫一 (Row 1)", claimedBy: null },
+            { id: "h2", type: "h", name: "橫二 (Row 2)", claimedBy: null },
+            { id: "h3", type: "h", name: "橫三 (Row 3)", claimedBy: null },
+            { id: "h4", type: "h", name: "橫四 (Row 4)", claimedBy: null },
+            { id: "h5", type: "h", name: "橫五 (Row 5)", claimedBy: null },
+            { id: "h6", type: "h", name: "橫六 (Row 6)", claimedBy: null },
+            // 直向
+            { id: "v1", type: "v", name: "直 1 (Col 1)", claimedBy: null },
+            { id: "v2", type: "v", name: "直 2 (Col 2)", claimedBy: null },
+            { id: "v3", type: "v", name: "直 3 (Col 3)", claimedBy: null },
+            { id: "v4", type: "v", name: "直 4 (Col 4)", claimedBy: null },
+            { id: "v5", type: "v", name: "直 5 (Col 5)", claimedBy: null },
+            { id: "v6", type: "v", name: "直 6 (Col 6)", claimedBy: null },
+            // 斜向
+            { id: "d1", type: "d", name: "左上至右下斜線 (↘)", claimedBy: null },
+            { id: "d2", type: "d", name: "右上至左下斜線 (↙)", claimedBy: null }
+        ];
+
+        let currentLineTab = "h";
+        let targetLineToClaim = null;
+
+        // 使用瀏覽器 Web Audio API 合成互動音效（無需外部音檔）
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+
+                if (type === 'click') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'correct') {
+                    [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                        gain.gain.setValueAtTime(0.25, now + i * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.35);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + i * 0.08);
+                        osc.stop(now + i * 0.08 + 0.4);
+                    });
+                } else if (type === 'wrong') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(130, now + 0.3);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'tick') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(900, now);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.linearRampToValueAtTime(0.001, now + 0.03);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.03);
+                } else if (type === 'bingo') {
+                    const notes = [440, 554.37, 659.25, 880, 1108.7];
+                    notes.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+                        gain.gain.setValueAtTime(0.3, now + idx * 0.12);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.5);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + idx * 0.12);
+                        osc.stop(now + idx * 0.12 + 0.55);
+                    });
+                }
+            } catch (e) {
+                console.warn("Audio playback error:", e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            btn.className = soundEnabled 
+                ? "p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 text-sm transition"
+                : "p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-500 text-sm transition";
+            playSound('click');
+        }
+
+        // 渲染 6x6 賓果主面板宮格
+        function renderBingoGrid() {
+            const gridEl = document.getElementById('bingo-grid');
+            gridEl.innerHTML = '';
+
+            QUESTIONS_DATA.forEach(q => {
+                const state = tileStates[q.id];
+                const catStyle = CATEGORY_STYLES[q.category] || CATEGORY_STYLES["AI深偽"];
+                const diffStyle = DIFFICULTY_STYLES[q.difficulty] || DIFFICULTY_STYLES["初級"];
+                const btn = document.createElement('button');
+                btn.id = `tile-btn-${q.id}`;
+                btn.onclick = () => openQuestionModal(q.id);
+
+                let bgClasses = "bg-slate-900/95 hover:bg-slate-800 border-slate-800 hover:border-cyan-400/70 text-slate-100 hover:scale-[1.03]";
+                let badge = "";
+
+                if (state.opened) {
+                    if (state.answeredCorrect) {
+                        const team = teams.find(t => t.id === state.teamId);
+                        const teamName = team ? team.name : "已答對";
+                        bgClasses = "bg-emerald-950/80 border-emerald-500/80 text-emerald-200 shadow-md";
+                        badge = `<div class="absolute top-1 right-1 text-[10px] md:text-xs font-bold bg-emerald-500 text-slate-950 px-1.5 py-0.2 rounded-md shadow">${teamName}</div>`;
+                    } else {
+                        bgClasses = "bg-rose-950/40 border-rose-500/40 text-slate-400";
+                        badge = `<div class="absolute top-1 right-1 text-[10px] md:text-xs font-bold bg-rose-600/70 text-white px-1.5 py-0.2 rounded-md">無得分</div>`;
+                    }
+                }
+
+                btn.className = `relative rounded-xl md:rounded-2xl border p-1.5 md:p-2.5 flex flex-col items-center justify-between transition-all duration-200 shadow-md overflow-hidden ${bgClasses}`;
+                btn.innerHTML = `
+                    ${badge}
+                    <!-- 頂部題號、難度星等與分類指示點 -->
+                    <div class="w-full flex items-center justify-between">
+                        <div class="w-6 h-6 md:w-8 md:h-8 rounded-lg md:rounded-xl bg-slate-950/90 text-white font-black text-xs md:text-sm flex items-center justify-center border border-slate-700/80 shadow font-mono">
+                            ${q.id}
+                        </div>
+                        ${!state.opened ? `
+                            <div class="flex items-center gap-1">
+                                <span class="text-[10px] text-amber-400/90 font-bold tracking-tighter" title="${q.difficulty}">${diffStyle.stars}</span>
+                                <span class="w-2 h-2 rounded-full ${catStyle.dot}" title="${q.category}"></span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- 題目核心主題名稱 -->
+                    <div class="text-[11px] md:text-xs font-bold text-center line-clamp-2 px-0.5 text-slate-200 my-auto leading-snug">
+                        ${q.title}
+                    </div>
+
+                    <!-- 金額標籤 -->
+                    <div class="w-full text-center py-0.5 rounded-lg bg-slate-950/70 border border-slate-800 text-[10px] md:text-xs font-black text-amber-400 font-mono">
+                        $${q.reward.toLocaleString()}
+                    </div>
+                `;
+
+                gridEl.appendChild(btn);
+            });
+
+            updateStatsAndCounters();
+        }
+
+        // 渲染右側分組積分與回合
+        function renderTeams() {
+            const listEl = document.getElementById('teams-list');
+            const selectEl = document.getElementById('modal-awarding-team');
+            const claimSelectEl = document.getElementById('line-claim-team-select');
+            
+            listEl.innerHTML = '';
+            selectEl.innerHTML = '';
+            claimSelectEl.innerHTML = '';
+
+            const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+
+            sortedTeams.forEach((team, rank) => {
+                const isCurrentTurn = team.id === teams[currentTurnIndex].id;
+                const card = document.createElement('div');
+                card.className = `flex items-center justify-between p-2 rounded-xl border transition ${
+                    isCurrentTurn 
+                        ? 'bg-cyan-950/70 border-cyan-400 ring-2 ring-cyan-500/40 shadow-md' 
+                        : 'bg-slate-950/60 border-slate-800'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${rank === 0 && team.score > 0 ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">
+                            ${rank + 1}
+                        </span>
+                        <div>
+                            <div class="font-bold text-sm text-white flex items-center gap-1.5">
+                                ${team.name}
+                                ${isCurrentTurn ? '<span class="text-[10px] px-1.5 py-0.2 bg-cyan-500 text-slate-950 font-black rounded">本輪</span>' : ''}
+                            </div>
+                            <div class="text-[11px] text-slate-400">連線數：${team.linesWon} 條</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-mono font-black text-base text-amber-300">$${team.score.toLocaleString()}</div>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+
+            teams.forEach(team => {
+                const opt1 = document.createElement('option');
+                opt1.value = team.id;
+                opt1.textContent = `${team.name} (目前 $${team.score.toLocaleString()})`;
+                if (team.id === teams[currentTurnIndex].id) opt1.selected = true;
+                selectEl.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = team.id;
+                opt2.textContent = `${team.name}`;
+                claimSelectEl.appendChild(opt2);
+            });
+
+            const currentTeam = teams[currentTurnIndex];
+            document.getElementById('current-turn-name').textContent = currentTeam.name;
+        }
+
+        function changeCurrentTurn() {
+            playSound('click');
+            currentTurnIndex = (currentTurnIndex + 1) % teams.length;
+            renderTeams();
+        }
+
+        function switchLineTab(type) {
+            playSound('click');
+            currentLineTab = type;
+            
+            document.getElementById('tab-horizontal').className = type === 'h' 
+                ? "flex-1 py-1.5 text-center text-amber-400 border-b-2 border-amber-400 font-bold" 
+                : "flex-1 py-1.5 text-center text-slate-400 hover:text-slate-200";
+            document.getElementById('tab-vertical').className = type === 'v' 
+                ? "flex-1 py-1.5 text-center text-amber-400 border-b-2 border-amber-400 font-bold" 
+                : "flex-1 py-1.5 text-center text-slate-400 hover:text-slate-200";
+            document.getElementById('tab-diagonal').className = type === 'd' 
+                ? "flex-1 py-1.5 text-center text-amber-400 border-b-2 border-amber-400 font-bold" 
+                : "flex-1 py-1.5 text-center text-slate-400 hover:text-slate-200";
+
+            renderLinesTracker();
+        }
+
+        function renderLinesTracker() {
+            const container = document.getElementById('lines-container');
+            container.innerHTML = '';
+
+            const filteredLines = LINES_DEFINITION.filter(l => l.type === currentLineTab);
+
+            filteredLines.forEach(line => {
+                const item = document.createElement('div');
+                const isClaimed = line.claimedBy !== null;
+                const claimingTeam = isClaimed ? teams.find(t => t.id === line.claimedBy) : null;
+
+                item.className = `flex items-center justify-between p-2 rounded-xl border text-xs ${
+                    isClaimed 
+                        ? 'bg-amber-950/30 border-amber-500/40 text-amber-200' 
+                        : 'bg-slate-950/60 border-slate-800 text-slate-200 hover:border-slate-600'
+                }`;
+
+                item.innerHTML = `
+                    <div class="font-bold flex items-center gap-1.5">
+                        <span class="${isClaimed ? 'text-amber-400' : 'text-slate-500'}">●</span>
+                        <span>${line.name}</span>
+                    </div>
+
+                    ${isClaimed ? `
+                        <div class="flex items-center gap-1.5">
+                            <span class="bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded font-black">
+                                🏆 ${claimingTeam ? claimingTeam.name : '已得'} (+$5,000)
+                            </span>
+                        </div>
+                    ` : `
+                        <button onclick="openClaimLineModal('${line.id}')" class="px-2.5 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition shadow transform active:scale-95">
+                            登記 BINGO!
+                        </button>
+                    `}
+                `;
+                container.appendChild(item);
+            });
+
+            const totalClaimed = LINES_DEFINITION.filter(l => l.claimedBy !== null).length;
+            document.getElementById('claimed-lines-count').textContent = `${totalClaimed} / 14 條`;
+        }
+
+        function openClaimLineModal(lineId) {
+            playSound('click');
+            const line = LINES_DEFINITION.find(l => l.id === lineId);
+            if (!line || line.claimedBy !== null) return;
+
+            targetLineToClaim = line;
+            document.getElementById('line-claim-target-text').textContent = `登記連線：${line.name} (獎金 $5,000)`;
+            toggleModal('line-claim-modal', true);
+        }
+
+        function confirmClaimLine() {
+            if (!targetLineToClaim) return;
+            const selectedTeamId = parseInt(document.getElementById('line-claim-team-select').value);
+            const team = teams.find(t => t.id === selectedTeamId);
+
+            if (team) {
+                targetLineToClaim.claimedBy = team.id;
+                team.score += 5000;
+                team.linesWon += 1;
+
+                playSound('bingo');
+                launchConfetti();
+                toggleModal('line-claim-modal', false);
+                renderLinesTracker();
+                renderTeams();
+                updateStatsAndCounters();
+            }
+        }
+
+        let timerDuration = 10.0;
+        let timerRemaining = 10.0;
+        let timerInterval = null;
+        let timerRunning = false;
+
+        // 打開選擇題視窗
+        function openQuestionModal(tileId) {
+            playSound('click');
+            activeTileId = tileId;
+            const q = QUESTIONS_DATA.find(item => item.id === tileId);
+            if (!q) return;
+
+            const catStyle = CATEGORY_STYLES[q.category] || CATEGORY_STYLES["AI深偽"];
+            const diffStyle = DIFFICULTY_STYLES[q.difficulty] || DIFFICULTY_STYLES["初級"];
+            const optionLetters = ["A", "B", "C", "D"];
+
+            document.getElementById('modal-q-number').textContent = q.id;
+            document.getElementById('modal-q-seq').textContent = `題號 #${q.id}`;
+            
+            const catBadge = document.getElementById('modal-q-category-badge');
+            catBadge.textContent = q.category;
+            catBadge.className = `text-xs px-2.5 py-0.5 rounded-full font-bold border ${catStyle.badge}`;
+
+            const diffBadge = document.getElementById('modal-q-difficulty-badge');
+            diffBadge.textContent = `${q.difficulty} ${diffStyle.stars}`;
+            diffBadge.className = `text-xs px-2.5 py-0.5 rounded-full font-bold border ${diffStyle.badge}`;
+
+            document.getElementById('modal-q-title').textContent = q.title;
+            document.getElementById('modal-q-reward').textContent = `$${q.reward.toLocaleString()} 元`;
+            document.getElementById('modal-q-text').textContent = q.question;
+            document.getElementById('modal-q-answer').textContent = `(${optionLetters[q.correctIndex]}) ${q.options[q.correctIndex]}`;
+            document.getElementById('modal-q-detail').textContent = q.detail;
+
+            // 渲染四選一選項按鈕
+            const optionsGrid = document.getElementById('modal-options-grid');
+            optionsGrid.innerHTML = '';
+            q.options.forEach((optText, idx) => {
+                const optBtn = document.createElement('button');
+                optBtn.id = `q-option-btn-${idx}`;
+                optBtn.onclick = () => selectMultipleChoiceOption(idx);
+                optBtn.className = "option-choice-btn w-full text-left p-3.5 rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 border-2 border-slate-700 hover:border-cyan-400 text-slate-100 transition-all flex items-center gap-3 shadow-md group";
+                optBtn.innerHTML = `
+                    <span class="opt-letter w-9 h-9 rounded-xl bg-slate-900 group-hover:bg-cyan-600 text-cyan-300 group-hover:text-white font-black text-base flex items-center justify-center border border-slate-700 shrink-0 transition">
+                        ${optionLetters[idx]}
+                    </span>
+                    <span class="font-bold text-sm md:text-base leading-snug flex-1">${optText}</span>
+                    <span class="opt-status-tag text-xs font-black px-2 py-0.5 rounded-lg hidden"></span>
+                `;
+                optionsGrid.appendChild(optBtn);
+            });
+
+            // 重置底部結算按鈕視覺提示
+            resetModalActionButtons();
+
+            const selectEl = document.getElementById('modal-awarding-team');
+            selectEl.value = teams[currentTurnIndex].id;
+
+            document.getElementById('answer-content-box').classList.add('hidden');
+            document.getElementById('answer-reveal-icon').textContent = "▼";
+
+            resetTimer();
+            toggleModal('question-modal', true);
+        }
+
+        // 處理教師點擊學生選擇的 A/B/C/D 選項
+        function selectMultipleChoiceOption(selectedIndex) {
+            if (!activeTileId) return;
+            const q = QUESTIONS_DATA.find(item => item.id === activeTileId);
+            if (!q) return;
+
+            // 自動停止倒數計時器
+            stopTimer();
+            document.getElementById('timer-badge').textContent = "已作答";
+
+            const isCorrect = selectedIndex === q.correctIndex;
+            const optionLetters = ["A", "B", "C", "D"];
+
+            // 更新四個選項的視覺回饋（標示正確答案與選錯項目）
+            q.options.forEach((_, idx) => {
+                const btn = document.getElementById(`q-option-btn-${idx}`);
+                const tag = btn.querySelector('.opt-status-tag');
+                const letterBox = btn.querySelector('.opt-letter');
+
+                // 先恢復預設基底樣式（方便教師誤觸時重新點選修正）
+                btn.className = "option-choice-btn w-full text-left p-3.5 rounded-2xl border-2 transition-all flex items-center gap-3 shadow-md";
+                tag.classList.add('hidden');
+
+                if (idx === q.correctIndex) {
+                    btn.classList.add('bg-emerald-950/90', 'border-emerald-400', 'text-emerald-100', 'ring-2', 'ring-emerald-400/40');
+                    letterBox.className = "opt-letter w-9 h-9 rounded-xl bg-emerald-500 text-slate-950 font-black text-base flex items-center justify-center shrink-0";
+                    tag.textContent = "✅ 正確答案";
+                    tag.className = "opt-status-tag text-xs font-black px-2 py-0.5 rounded-lg bg-emerald-500 text-slate-950 shrink-0";
+                } else if (idx === selectedIndex && !isCorrect) {
+                    btn.classList.add('bg-rose-950/90', 'border-rose-500', 'text-rose-100');
+                    letterBox.className = "opt-letter w-9 h-9 rounded-xl bg-rose-600 text-white font-black text-base flex items-center justify-center shrink-0";
+                    tag.textContent = "❌ 選錯了";
+                    tag.className = "opt-status-tag text-xs font-black px-2 py-0.5 rounded-lg bg-rose-600 text-white shrink-0";
+                } else {
+                    btn.classList.add('bg-slate-900/50', 'border-slate-800', 'text-slate-500');
+                    letterBox.className = "opt-letter w-9 h-9 rounded-xl bg-slate-950 text-slate-600 font-black text-base flex items-center justify-center border border-slate-800 shrink-0";
+                }
+            });
+
+            // 播放對應音效並自動展開解析供教師講解
+            playSound(isCorrect ? 'correct' : 'wrong');
+            document.getElementById('answer-content-box').classList.remove('hidden');
+            document.getElementById('answer-reveal-icon').textContent = "▲";
+
+            // 高亮對應的底部結算按鈕引導教師一鍵結算
+            const btnWrong = document.getElementById('btn-mark-wrong');
+            const btnCorrect = document.getElementById('btn-mark-correct');
+            if (isCorrect) {
+                btnCorrect.classList.add('ring-4', 'ring-emerald-400/60', 'scale-105');
+                btnWrong.classList.remove('ring-4', 'ring-rose-500/60', 'scale-105');
+            } else {
+                btnWrong.classList.add('ring-4', 'ring-rose-500/60', 'scale-105');
+                btnCorrect.classList.remove('ring-4', 'ring-emerald-400/60', 'scale-105');
+            }
+        }
+
+        function resetModalActionButtons() {
+            const btnWrong = document.getElementById('btn-mark-wrong');
+            const btnCorrect = document.getElementById('btn-mark-correct');
+            if (btnWrong) btnWrong.classList.remove('ring-4', 'ring-rose-500/60', 'scale-105');
+            if (btnCorrect) btnCorrect.classList.remove('ring-4', 'ring-emerald-400/60', 'scale-105');
+        }
+
+        function closeQuestionModal() {
+            playSound('click');
+            stopTimer();
+            toggleModal('question-modal', false);
+        }
+
+        function toggleAnswerReveal() {
+            playSound('click');
+            const box = document.getElementById('answer-content-box');
+            const icon = document.getElementById('answer-reveal-icon');
+            if (box.classList.contains('hidden')) {
+                box.classList.remove('hidden');
+                icon.textContent = "▲";
+            } else {
+                box.classList.add('hidden');
+                icon.textContent = "▼";
+            }
+        }
+
+        function toggleTimer() {
+            if (timerRunning) {
+                stopTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            if (timerRemaining <= 0) {
+                timerRemaining = 10.0;
+            }
+            timerRunning = true;
+            document.getElementById('timer-toggle-btn').textContent = "暫停計時";
+            document.getElementById('timer-toggle-btn').className = "px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg transition";
+            document.getElementById('timer-badge').textContent = "進行中";
+            document.getElementById('timer-badge').className = "text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded";
+
+            const step = 100;
+            timerInterval = setInterval(() => {
+                timerRemaining = Math.max(0, timerRemaining - step / 1000);
+                updateTimerDisplay();
+
+                if (timerRemaining <= 3.0 && timerRemaining > 0 && Math.round(timerRemaining * 10) % 10 === 0) {
+                    playSound('tick');
+                }
+
+                if (timerRemaining <= 0) {
+                    stopTimer();
+                    playSound('wrong');
+                    document.getElementById('timer-badge').textContent = "時間到！";
+                    document.getElementById('timer-badge').className = "text-xs bg-rose-500/30 text-rose-300 px-2 py-0.5 rounded font-bold animate-pulse";
+                }
+            }, step);
+        }
+
+        function stopTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            document.getElementById('timer-toggle-btn').textContent = "繼續計時";
+            document.getElementById('timer-toggle-btn').className = "px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold rounded-lg transition";
+        }
+
+        function resetTimer() {
+            stopTimer();
+            timerRemaining = 10.0;
+            updateTimerDisplay();
+            document.getElementById('timer-toggle-btn').textContent = "開始倒數";
+            document.getElementById('timer-badge').textContent = "未啟動";
+            document.getElementById('timer-badge').className = "text-xs bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded";
+        }
+
+        function updateTimerDisplay() {
+            const bar = document.getElementById('timer-bar');
+            const text = document.getElementById('timer-text');
+            const percent = (timerRemaining / timerDuration) * 100;
+            bar.style.width = `${percent}%`;
+            text.textContent = `剩餘：${timerRemaining.toFixed(1)} 秒`;
+        }
+
+        function markQuestionResult(isCorrect) {
+            if (!activeTileId) return;
+            const q = QUESTIONS_DATA.find(item => item.id === activeTileId);
+            const awardedTeamId = parseInt(document.getElementById('modal-awarding-team').value);
+            const team = teams.find(t => t.id === awardedTeamId);
+
+            tileStates[activeTileId].opened = true;
+            tileStates[activeTileId].answeredCorrect = isCorrect;
+            tileStates[activeTileId].teamId = isCorrect ? awardedTeamId : null;
+
+            if (isCorrect && team && q) {
+                team.score += q.reward;
+                playSound('correct');
+            } else {
+                playSound('wrong');
+            }
+
+            currentTurnIndex = (currentTurnIndex + 1) % teams.length;
+
+            closeQuestionModal();
+            renderBingoGrid();
+            renderTeams();
+            updateStatsAndCounters();
+        }
+
+        let previewTimerInterval = null;
+        let previewSecondsLeft = 30;
+
+        function startPreviewMode() {
+            playSound('click');
+            const modal = document.getElementById('preview-modal');
+            const gridContainer = document.getElementById('preview-grid');
+            gridContainer.innerHTML = '';
+
+            QUESTIONS_DATA.forEach(q => {
+                const catStyle = CATEGORY_STYLES[q.category] || CATEGORY_STYLES["AI深偽"];
+                const diffStyle = DIFFICULTY_STYLES[q.difficulty] || DIFFICULTY_STYLES["初級"];
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-cyan-500/40 rounded-xl p-2 flex flex-col justify-between text-center shadow-lg relative min-h-[95px] md:min-h-[110px]";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 gap-1">
+                        <span class="bg-cyan-600 text-white w-5 h-5 rounded-md flex items-center justify-center font-mono font-bold shrink-0">${q.id}</span>
+                        <span class="text-[10px] px-1.5 py-0.2 rounded border ${diffStyle.badge}">${q.difficulty}</span>
+                        <span class="text-amber-400 font-black tracking-tight text-xs font-mono">$${q.reward.toLocaleString()}</span>
+                    </div>
+                    <div class="my-auto py-1 font-bold text-xs md:text-sm text-slate-100 line-clamp-2 leading-snug flex items-center justify-center">
+                        ${q.title}
+                    </div>
+                    <div class="text-[10px] text-slate-400 truncate">${q.category}</div>
+                `;
+                gridContainer.appendChild(card);
+            });
+
+            modal.classList.remove('hidden');
+            previewSecondsLeft = 30;
+            document.getElementById('preview-timer-num').textContent = previewSecondsLeft;
+
+            clearInterval(previewTimerInterval);
+            previewTimerInterval = setInterval(() => {
+                previewSecondsLeft--;
+                document.getElementById('preview-timer-num').textContent = previewSecondsLeft;
+                if (previewSecondsLeft <= 5 && previewSecondsLeft > 0) {
+                    playSound('tick');
+                }
+                if (previewSecondsLeft <= 0) {
+                    stopPreviewMode();
+                }
+            }, 1000);
+        }
+
+        function stopPreviewMode() {
+            clearInterval(previewTimerInterval);
+            previewTimerInterval = null;
+            document.getElementById('preview-modal').classList.add('hidden');
+            playSound('bingo');
+        }
+
+        function pickRandomUnopenedTile() {
+            playSound('click');
+            const unopened = QUESTIONS_DATA.filter(q => !tileStates[q.id].opened);
+            if (unopened.length === 0) {
+                showToast("🎉 所有 36 道媒體識讀題目均已點選完畢！");
+                return;
+            }
+
+            const picked = unopened[Math.floor(Math.random() * unopened.length)];
+            const btn = document.getElementById(`tile-btn-${picked.id}`);
+            if (btn) {
+                btn.classList.add('animate-gold-glow', 'ring-4', 'ring-amber-400');
+                setTimeout(() => {
+                    btn.classList.remove('animate-gold-glow', 'ring-4', 'ring-amber-400');
+                    openQuestionModal(picked.id);
+                }, 420);
+            } else {
+                openQuestionModal(picked.id);
+            }
+        }
+
+        function updateStatsAndCounters() {
+            const openedCount = QUESTIONS_DATA.filter(q => tileStates[q.id].opened).length;
+            const remaining = 36 - openedCount;
+            document.getElementById('unopened-counter').textContent = `剩餘 ${remaining} 格`;
+            document.getElementById('completed-questions-count').textContent = `${openedCount}/36`;
+
+            const totalIssued = teams.reduce((sum, t) => sum + t.score, 0);
+            document.getElementById('total-money-issued').textContent = `$${totalIssued.toLocaleString()}`;
+        }
+
+        function toggleModal(modalId, show) {
+            const el = document.getElementById(modalId);
+            if (!el) return;
+            if (show) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        function openPrintModal() {
+            playSound('click');
+            toggleModal('print-modal', true);
+        }
+
+        function toggleFullscreen() {
+            playSound('click');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        function openResetConfirmModal() {
+            playSound('click');
+            toggleModal('reset-confirm-modal', true);
+        }
+
+        function executeResetGame() {
+            QUESTIONS_DATA.forEach(q => {
+                tileStates[q.id] = { opened: false, answeredCorrect: null, teamId: null };
+            });
+            teams.forEach(t => {
+                t.score = 0;
+                t.linesWon = 0;
+            });
+            LINES_DEFINITION.forEach(l => l.claimedBy = null);
+            currentTurnIndex = 0;
+
+            toggleModal('reset-confirm-modal', false);
+            renderBingoGrid();
+            renderTeams();
+            renderLinesTracker();
+            updateStatsAndCounters();
+            playSound('click');
+            showToast("✅ 已重設整場媒體識讀賓果遊戲！");
+        }
+
+        function showToast(msg) {
+            const div = document.createElement('div');
+            div.className = "fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-amber-400 text-amber-300 font-bold px-6 py-3 rounded-2xl shadow-2xl animate-bounce";
+            div.textContent = msg;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 2600);
+        }
+
+        // 彩帶灑花慶祝動畫
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let confettiAnimationId = null;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function launchConfetti() {
+            particles = [];
+            const colors = ['#06b6d4', '#f59e0b', '#a855f7', '#10b981', '#3b82f6'];
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height * 0.4,
+                    r: Math.random() * 6 + 3,
+                    dx: (Math.random() - 0.5) * 15,
+                    dy: (Math.random() - 0.8) * 18,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.random() * 10,
+                    tiltAngle: 0,
+                    tiltAngleInc: Math.random() * 0.08 + 0.04
+                });
+            }
+
+            if (!confettiAnimationId) {
+                renderConfetti();
+            }
+        }
+
+        function renderConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let active = false;
+
+            particles.forEach(p => {
+                p.x += p.dx;
+                p.y += p.dy;
+                p.dy += 0.35;
+                p.tiltAngle += p.tiltAngleInc;
+                p.tilt = Math.sin(p.tiltAngle) * 12;
+
+                if (p.y < canvas.height) {
+                    active = true;
+                    ctx.beginPath();
+                    ctx.lineWidth = p.r;
+                    ctx.strokeStyle = p.color;
+                    ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                    ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                    ctx.stroke();
+                }
+            });
+
+            if (active) {
+                confettiAnimationId = requestAnimationFrame(renderConfetti);
+            } else {
+                cancelAnimationFrame(confettiAnimationId);
+                confettiAnimationId = null;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        // 鍵盤快捷鍵支援 (Space 控制計時器 / Escape 關閉視窗)
+        window.addEventListener('keydown', (e) => {
+            const questionModal = document.getElementById('question-modal');
+            if (!questionModal.classList.contains('hidden')) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    toggleTimer();
+                } else if (e.code === 'Escape') {
+                    closeQuestionModal();
+                }
+            }
+        });
+
+        window.onload = function() {
+            renderBingoGrid();
+            renderTeams();
+            renderLinesTracker();
+            updateStatsAndCounters();
+        };
+    </script>
+</body>
+</html>
